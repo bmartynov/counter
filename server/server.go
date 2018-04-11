@@ -106,7 +106,7 @@ func main() {
 
 
 
-	l, err := net.Listen("tcp", port)
+	l, err := net.Listen("tcp", ":"+port)
 	if err != nil {
 		log.Fatal(err)
 	}
