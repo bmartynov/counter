@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+package pb;
+
+message Request {
+    string url = 1;
+    string criteria = 2;
+}
+
+message Summary {
+    float secondsElapsed = 1;
+    fixed32 count = 2;
+    fixed32 failed = 3;
+    fixed32 success = 4;
+    string error = 5;
+}
+
+message CountResponse {
+    Request request = 1;
+    fixed32 Count = 2;
+    string error = 3;
+}
+
+message Response {
+    oneof response {
+        Summary summary = 1;
+        CountResponse count = 2;
+    }
+}
+
+
+service Counter {
+    rpc Count (stream Request) returns (stream Response);
+}
