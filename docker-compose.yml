@@ -1,0 +1,48 @@
+version: '3'
+services:
+  consul:
+    image:  consul:latest
+    command: "agent -server -bootstrap -client=0.0.0.0 -ui"
+    ports:
+      - 8500:8500
+      - 8080:8080
+
+  registrator:
+    image: gliderlabs/registrator:latest
+    command: "consul://consul:8500"
+    links:
+      - consul
+    depends_on:
+      - consul
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock
+
+  nginx:
+    build:
+      context: dockerization/nginx
+      dockerfile: Dockerfile
+    restart: always
+    links:
+      - consul
+    ports:
+    - "127.0.0.1:80:80"
+    volumes:
+    - ./nginx/conf.d:/etc/nginx/conf.d
+    - ./nginx/logs:/etc/nginx/logs
+
+  backend:
+    build:
+      context: dockerization/backend/
+      dockerfile: Dockerfile
+    links:
+      - consul
+    depends_on:
+      - consul
+    ports:
+      - 8123:8123
+    environment:
+      - SERVICE_NAME=backend
+      - PORT=8123
+      - CONCURRENCY=6
+    volumes:
+      - "/etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt"
